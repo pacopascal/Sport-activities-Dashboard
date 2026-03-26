@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Other Analytics Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="activity_dashboard_data.js"></script>
+<script src="sport_activities_data_runtime.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0a0e1a;color:#e0e6f0;min-height:100vh}
+header{background:linear-gradient(135deg,#2d3436 0%,#0d2137 100%);padding:18px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.header-left h1{font-size:1.4rem;font-weight:700;color:#64748b;min-width:180px}
+.back-link{color:#dfe6e9;text-decoration:none;font-size:.85rem;border:1px solid rgba(255,255,255,.18);padding:6px 10px;border-radius:8px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-left:auto}
+.filters select,.filters button{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#dfe6e9;padding:6px 12px;border-radius:6px;font-size:.82rem;cursor:pointer}
+.filters button.active{background:#64748b;border-color:#64748b;color:#fff}
+.content{padding-bottom:18px}
+.section{padding:14px 20px 0}
+.section-title{font-size:.92rem;font-weight:600;color:#7ab8ff;margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #1e2d54;padding-bottom:6px;display:inline-block}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;padding:14px 20px}
+.kpi-card{background:linear-gradient(145deg,#131e38,#1a2744);border:1px solid #2a3a6a;border-radius:12px;padding:16px;text-align:center;transition:.2s}
+.kpi-card:hover{border-color:#4db8ff;transform:translateY(-2px)}
+.kpi-label{font-size:.7rem;color:#8090b8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.kpi-value{font-size:1.4rem;font-weight:700;color:#4db8ff}
+.charts-grid{display:grid;gap:16px;padding:0 20px 14px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.chart-card{background:#0d1b38;border:1px solid #2a3a6a;border-radius:12px;padding:16px}
+.chart-card h3{font-size:.82rem;color:#7ab8ff;margin-bottom:10px;font-weight:600}
+.chart-wrap{position:relative;height:220px}
+#mapContainer{height:340px;border-radius:10px;overflow:hidden}
+.table-wrap{overflow-x:auto;padding:0 20px 20px}
+table{width:100%;border-collapse:collapse;font-size:.76rem;min-width:850px;background:#0d1b38;border-radius:12px;overflow:hidden}
+th{padding:8px 10px;text-align:left;color:#7ab8ff;font-weight:600;border-bottom:1px solid #2a3a6a;font-size:.72rem;text-transform:uppercase;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #141e36;color:#c0d0f0;white-space:nowrap}
+tr:hover td{background:#1a2744}
+.empty{text-align:center;padding:16px;color:#8090b8}
+.type-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;padding:14px 20px}
+.type-card{background:#0d1b38;border:1px solid #2a3a6a;border-radius:12px;padding:16px}
+.type-name{font-size:.78rem;color:#8090b8;text-transform:uppercase;letter-spacing:.04em}
+.type-count{font-size:1.5rem;font-weight:700;color:#4db8ff;margin-top:6px}
+.type-time{font-size:.74rem;color:#8090b8;margin-top:4px}
+footer{text-align:center;padding:16px;font-size:.7rem;color:#6070a0}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left"><h1>📍 Other Analytics</h1></div>
+  <a href="sport_activities_dashboard.html" class="back-link">← Back to Dashboard</a>
+  <div class="filters"><select id="selYear"></select></div>
+</header>
+<div class="content">
+  <div class="kpi-grid" id="kpiGrid"></div>
+  <div class="section"><h2 class="section-title">Activity Type Breakdown</h2></div>
+  <div class="type-breakdown" id="typeBreakdown"></div>
+  <div class="section" style="margin-top:14px"><h2 class="section-title">Activity Map</h2></div>
+  <div style="padding:0 20px 14px"><div class="chart-card" style="padding:0"><div id="mapContainer"></div></div></div>
+  <div class="charts-grid">
+    <div class="chart-card"><h3>Monthly Activity Count</h3><div class="chart-wrap"><canvas id="cMonthlyCount"></canvas></div></div>
+    <div class="chart-card"><h3>Day of Week Distribution</h3><div class="chart-wrap"><canvas id="cDow"></canvas></div></div>
+    <div class="chart-card"><h3>Yearly Comparison</h3><div class="chart-wrap"><canvas id="cYearly"></canvas></div></div>
+    <div class="chart-card"><h3>Monthly Calories</h3><div class="chart-wrap"><canvas id="cCalories"></canvas></div></div>
+  </div>
+  <div class="section"><h2 class="section-title">Recent Activities</h2></div>
+  <div class="table-wrap"><table><thead><tr><th>Date</th><th>Activity</th><th>Type</th><th>Duration</th><th>Distance</th><th>Calories</th><th>Avg HR</th><th>Effort</th></tr></thead><tbody id="activitiesBody"></tbody></table></div>
+</div>
+<footer>Built from activities.csv</footer>
+<script>
+
+function fmtTime(seconds) {
+  if (!seconds) return '--';
+  var s = Math.round(seconds);
+  var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  if (h > 0) return h + 'h ' + String(m).padStart(2, '0') + 'm';
+  return m + 'm ' + String(sec).padStart(2, '0') + 's';
+}
+function fmtPace(seconds) {
+  if (!seconds || !isFinite(seconds)) return '--';
+  var total = Math.round(seconds);
+  var m = Math.floor(total / 60), s = total % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+function kmToMi(km) { return km * 0.621371; }
+function mToYd(m) { return m * 1.09361; }
+function chartBaseOptions(textColor) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: textColor, font: { size: 11 } } } },
+    scales: {
+      x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.06)' } },
+      y: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.08)' }, beginAtZero: true }
+    }
+  };
+}
+
+const SOURCE = window.STRAVA_RUNTIME.getActivityDashboardSource('other');
+class Dashboard {
+  constructor(source) { this.source=source; this.year='all'; this.charts={}; this.map=null; this.markers=null; this.populateYears(); document.getElementById('selYear').addEventListener('change', e => { this.year=e.target.value; this.apply(); }); this.initMap(); this.apply(); }
+  populateYears() { const sel=document.getElementById('selYear'); sel.innerHTML='<option value="all">All Years</option>'+this.source.years.slice().reverse().map(y=>'<option value="'+y+'">'+y+'</option>').join(''); }
+  filteredRecent() { return this.source.recent.filter(r=>this.year==='all'||String(r.year)===this.year); }
+  filteredMonthly() { return this.source.monthly.filter(r=>this.year==='all'||r.year_month.slice(0,4)===this.year); }
+  filteredYearly() { return this.source.yearly.filter(r=>this.year==='all'||String(r.year)===this.year); }
+  filteredPins() { return this.source.pins.filter(r=>this.year==='all'||String(r.year)===this.year); }
+  initMap() { this.map=L.map('mapContainer').setView([41.0,-73.5],8); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ attribution:'&copy; OpenStreetMap contributors', maxZoom:18 }).addTo(this.map); this.markers=L.layerGroup().addTo(this.map); }
+  updateMap(pins) { this.markers.clearLayers(); const bounds=[]; pins.forEach(pin=>{ const colorMap={Workout:'#ef4444',Hike:'#eab308','Water Sport':'#0ea5e9','Weight Training':'#64748b','Nordic Ski':'#64748b'}; const marker=L.circleMarker([pin.lat,pin.lon],{radius:5,fillColor:colorMap[pin.activity_type]||'#64748b',color:'#fff',weight:1,opacity:.8,fillOpacity:.75}); marker.bindPopup('<b>'+pin.name+'</b><br>'+pin.activity_type+'<br>'+pin.date); this.markers.addLayer(marker); bounds.push([pin.lat,pin.lon]); }); if(bounds.length) this.map.fitBounds(bounds,{padding:[30,30]}); else this.map.setView([41.0,-73.5],8); }
+  apply() { const recent=this.filteredRecent(), monthly=this.filteredMonthly(), yearly=this.filteredYearly(), pins=this.filteredPins(); this.renderKPIs(recent,monthly); this.renderTypes(recent); this.renderCharts(recent,monthly,yearly); this.renderTable(recent); this.updateMap(pins); }
+  renderKPIs(recent,monthly) { const totalTimeS=monthly.reduce((s,r)=>s+(r.moving_time_s||0),0); const totalCount=monthly.reduce((s,r)=>s+(r.count||0),0); const totalCalories=monthly.reduce((s,r)=>s+(r.calories||0),0); const totalDistance=monthly.reduce((s,r)=>s+(r.distance_km||0),0); const hrVals=recent.map(r=>r.avg_hr).filter(v=>v!=null); const avgHr=hrVals.length?Math.round(hrVals.reduce((a,b)=>a+b,0)/hrVals.length):'--'; const cards=[['Total Activities',totalCount],['Total Time',fmtTime(totalTimeS)],['Avg Duration',totalCount?(Math.round(totalTimeS/60/totalCount)+' min'):'0'],['Total Calories',Math.round(totalCalories)],['Avg HR',avgHr],['Total Distance',totalDistance.toFixed(1)+' km']]; document.getElementById('kpiGrid').innerHTML=cards.map(k=>'<div class="kpi-card"><div class="kpi-label">'+k[0]+'</div><div class="kpi-value">'+k[1]+'</div></div>').join(''); }
+  renderTypes(recent) { const map={}; recent.forEach(r=>{ if(!map[r.activity_type]) map[r.activity_type]={count:0,time:0,cal:0}; map[r.activity_type].count+=1; map[r.activity_type].time+=r.moving_time_s||0; map[r.activity_type].cal+=r.calories||0; }); const rows=Object.keys(map).sort((a,b)=>map[b].count-map[a].count); const el=document.getElementById('typeBreakdown'); if(!rows.length){ el.innerHTML='<div class="type-card"><div class="type-name">No Data</div><div class="type-count">0</div><div class="type-time">0.0h</div></div>'; return; } el.innerHTML=rows.map(t=>'<div class="type-card"><div class="type-name">'+t+'</div><div class="type-count">'+map[t].count+'</div><div class="type-time">'+(map[t].time/3600).toFixed(1)+'h</div></div>').join(''); }
+  makeChart(id,type,data,options){ if(this.charts[id]) this.charts[id].destroy(); this.charts[id]=new Chart(document.getElementById(id),{type,data,options}); }
+  renderCharts(recent,monthly,yearly) { const opts=chartBaseOptions('#636e72'); this.makeChart('cMonthlyCount','bar',{labels:monthly.map(r=>r.year_month),datasets:[{label:'Activities',data:monthly.map(r=>r.count),backgroundColor:'#64748bbb',borderColor:'#64748b'}]},opts); const dowOrder=['Mon','Tue','Wed','Thu','Fri','Sat','Sun']; const dowMap={Mon:0,Tue:0,Wed:0,Thu:0,Fri:0,Sat:0,Sun:0}; recent.forEach(r=>{ if(dowMap[r.dow]!=null) dowMap[r.dow]+=1; }); this.makeChart('cDow','bar',{labels:dowOrder,datasets:[{label:'Activities',data:dowOrder.map(d=>dowMap[d]),backgroundColor:'#64748bbb',borderColor:'#64748b'}]},opts); this.makeChart('cYearly','bar',{labels:yearly.map(r=>r.year),datasets:[{label:'Activities',data:yearly.map(r=>r.count),backgroundColor:'#64748bbb',borderColor:'#64748b'}]},opts); this.makeChart('cCalories','line',{labels:monthly.map(r=>r.year_month),datasets:[{label:'Calories',data:monthly.map(r=>r.calories),borderColor:'#64748b',backgroundColor:'#64748b22',fill:true,tension:.35}]},opts); }
+  renderTable(recent) { const tbody=document.getElementById('activitiesBody'); if(!recent.length){ tbody.innerHTML='<tr><td class="empty" colspan="8">No other activities found for the selected year.</td></tr>'; return; } tbody.innerHTML=recent.slice(0,100).map(act=>'<tr><td>'+act.date+'</td><td>'+act.name+'</td><td>'+act.activity_type+'</td><td>'+fmtTime(act.moving_time_s)+'</td><td>'+act.distance_km.toFixed(2)+' km</td><td>'+(act.calories??'--')+'</td><td>'+(act.avg_hr??'--')+'</td><td>'+(act.effort??'--')+'</td></tr>').join(''); }
+}
+window.addEventListener('DOMContentLoaded',()=>new Dashboard(SOURCE));
+</script>
+</body>
+</html>

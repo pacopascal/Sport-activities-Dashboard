@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sport Activities Dashboard</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #0a0e1a;
+      color: #e0e6f0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a2744 0%, #0d1b3e 100%);
+      padding: 40px 24px;
+      text-align: center;
+      border-bottom: 1px solid #2a3a6a;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #4db8ff;
+      margin-bottom: 8px;
+    }
+
+    .header-subtitle {
+      font-size: 0.9rem;
+      color: #8090b8;
+    }
+
+    .upload-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      max-width: 1000px;
+      margin: 20px auto 0;
+      padding: 0 20px;
+    }
+
+    .upload-button,
+    .upload-reset {
+      border: 1px solid #3a4f8a;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .upload-button {
+      background: #2a4a9a;
+      color: #ffffff;
+    }
+
+    .upload-button:hover {
+      background: #3460c7;
+      border-color: #4db8ff;
+    }
+
+    .upload-reset {
+      background: transparent;
+      color: #c0d0f0;
+    }
+
+    .upload-reset:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: #8090b8;
+    }
+
+    .upload-status {
+      color: #a8b5d4;
+      font-size: 0.82rem;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+
+    .hero-stat {
+      background: linear-gradient(145deg, #131e38, #1a2744);
+      border: 1px solid #2a3a6a;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .hero-stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #4db8ff;
+    }
+
+    .hero-stat-label {
+      font-size: 0.75rem;
+      color: #8090b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 6px;
+    }
+
+    .content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    .content-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #7ab8ff;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-align: center;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .activity-card {
+      background: linear-gradient(145deg, #131e38, #1a2744);
+      border: 1px solid #2a3a6a;
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-left: 4px solid #4db8ff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .activity-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(77, 184, 255, 0.1) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .activity-card:hover {
+      border-color: #4db8ff;
+      transform: translateY(-8px);
+      box-shadow: 0 12px 24px rgba(77, 184, 255, 0.15);
+    }
+
+    .activity-card:hover::before {
+      opacity: 1;
+    }
+
+    .card-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-emoji {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #e0e6f0;
+      margin-bottom: 12px;
+    }
+
+    .card-stats {
+      font-size: 0.8rem;
+      color: #8090b8;
+      line-height: 1.6;
+    }
+
+    .card-stat-line {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .card-stat-value {
+      color: #4db8ff;
+      font-weight: 600;
+    }
+
+    .card-date-range {
+      font-size: 0.7rem;
+      color: #6070a0;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #1e2d54;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #6070a0;
+      font-size: 0.85rem;
+      border-top: 1px solid #2a3a6a;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 1.8rem;
+      }
+
+      .cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 16px;
+      }
+
+      .hero-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📊 Sport Activities</h1>
+    <p class="header-subtitle">Your comprehensive activity dashboard</p>
+    <div class="upload-toolbar">
+      <button class="upload-button" id="uploadButton" type="button">Upload Sport activities.csv</button>
+      <button class="upload-reset" id="resetButton" type="button" hidden>Clear uploaded data</button>
+      <input id="csvUpload" type="file" accept=".csv,text/csv" hidden>
+      <div class="upload-status" id="uploadStatus">Upload your exported `activities.csv` file to load your data</div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-value" id="heroActivities">0</div>
+        <div class="hero-stat-label">Total Activities</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value" id="heroDistance">0.0</div>
+        <div class="hero-stat-label">km Traveled</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value" id="heroHours">0.0</div>
+        <div class="hero-stat-label">Hours Moving</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value" id="heroDateRange">--</div>
+        <div class="hero-stat-label">Time Span</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <h2 class="content-title">Activity Breakdown</h2>
+    <div class="cards-grid" id="cardsContainer"></div>
+  </div>
+
+  <footer>
+    <p id="footerStatus">No bundled activity export included • Upload your own activities.csv</p>
+  </footer>
+
+  <script src="activity_dashboard_data.js"></script>
+  <script src="sport_activities_data_runtime.js"></script>
+  <script>
+    const DEFAULT_CARDS = [{"name":"Swim","emoji":"\ud83c\udfca","color":"#00bfff","link":"swim_dashboard.html","stats":{"count":0,"total_distance_km":0,"avg_distance_km":0,"total_time_s":0,"total_time_hours":0,"date_min":"--","date_max":"--","date_range":"--"}},{"name":"Walk & Run","emoji":"\ud83d\udeb6","color":"#22c55e","link":"walk_run_dashboard.html","stats":{"count":0,"total_distance_km":0,"avg_distance_km":0,"total_time_s":0,"total_time_hours":0,"date_min":"--","date_max":"--","date_range":"--"}},{"name":"Ride","emoji":"\ud83d\udeb4","color":"#ff9500","link":"ride_dashboard.html","stats":{"count":0,"total_distance_km":0,"avg_distance_km":0,"total_time_s":0,"total_time_hours":0,"date_min":"--","date_max":"--","date_range":"--"}},{"name":"Rowing","emoji":"\ud83d\udea3","color":"#a78bfa","link":"rowing_dashboard.html","stats":{"count":0,"total_distance_km":0,"avg_distance_km":0,"total_time_s":0,"total_time_hours":0,"date_min":"--","date_max":"--","date_range":"--"}},{"name":"Workout","emoji":"\ud83d\udcaa","color":"#ef4444","link":"workout_dashboard.html","stats":{"count":0,"total_distance_km":0,"avg_distance_km":0,"total_time_s":0,"total_time_hours":0,"date_min":"--","date_max":"--","date_range":"--"}},{"name":"Hike","emoji":"\ud83e\udd7e","color":"#eab308","link":"hike_dashboard.html","stats":{"count":0,"total_distance_km":0,"avg_distance_km":0,"total_time_s":0,"total_time_hours":0,"date_min":"--","date_max":"--","date_range":"--"}},{"name":"Other","emoji":"\ud83d\udccd","color":"#64748b","link":"other_dashboard.html","stats":{"count":0,"total_distance_km":0,"avg_distance_km":0,"total_time_s":0,"total_time_hours":0,"date_min":"--","date_max":"--","date_range":"--"}}];
+
+    function renderCards(cardsData) {
+      const container = document.getElementById('cardsContainer');
+      container.innerHTML = cardsData.map(card => `
+        <div class="activity-card" onclick="navigateTo('${card.link}')" style="border-left-color: ${card.color}">
+          <div class="card-content">
+            <span class="card-emoji">${card.emoji}</span>
+            <h3 class="card-title">${card.name}</h3>
+            <div class="card-stats">
+              <div class="card-stat-line">
+                <span>Activities:</span>
+                <span class="card-stat-value">${card.stats.count}</span>
+              </div>
+              <div class="card-stat-line">
+                <span>Distance:</span>
+                <span class="card-stat-value">${card.stats.total_distance_km} km</span>
+              </div>
+              <div class="card-stat-line">
+                <span>Time:</span>
+                <span class="card-stat-value">${card.stats.total_time_hours} h</span>
+              </div>
+            </div>
+            <div class="card-date-range">${card.stats.date_range}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderHero(hero) {
+      document.getElementById('heroActivities').textContent = hero.total_activities;
+      document.getElementById('heroDistance').textContent = Number(hero.total_distance_km || 0).toFixed(1);
+      document.getElementById('heroHours').textContent = Number(hero.total_time_hours || 0).toFixed(1);
+      document.getElementById('heroDateRange').textContent = hero.date_range || '--';
+    }
+
+    function updateUploadUi(meta) {
+      const resetButton = document.getElementById('resetButton');
+      const status = document.getElementById('uploadStatus');
+      const footer = document.getElementById('footerStatus');
+      if (meta) {
+        const uploadedAt = new Date(meta.uploaded_at);
+        const stamp = uploadedAt.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+        status.textContent = `Using uploaded file: ${meta.filename} • loaded ${stamp}`;
+        footer.textContent = `Data source: uploaded ${meta.filename} • loaded ${stamp}`;
+        resetButton.hidden = false;
+      } else {
+        status.textContent = 'Upload your exported activities.csv file to load your data';
+        footer.textContent = 'No bundled activity export included • Upload your own activities.csv';
+        resetButton.hidden = true;
+      }
+    }
+
+    function renderDashboard() {
+      const payload = window.STRAVA_RUNTIME.getOverviewData(DEFAULT_CARDS);
+      renderHero(payload.hero);
+      renderCards(payload.cards);
+      updateUploadUi(payload.meta);
+    }
+
+    function navigateTo(href) {
+      window.location.href = href;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('uploadButton').addEventListener('click', () => {
+        document.getElementById('csvUpload').click();
+      });
+
+      document.getElementById('csvUpload').addEventListener('change', async (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        try {
+          await window.STRAVA_RUNTIME.saveUploadedCsvFile(file);
+          renderDashboard();
+        } catch (error) {
+          document.getElementById('uploadStatus').textContent = error.message || 'Unable to load the uploaded CSV.';
+        }
+        event.target.value = '';
+      });
+
+      document.getElementById('resetButton').addEventListener('click', () => {
+        window.STRAVA_RUNTIME.clearUploadedData();
+        renderDashboard();
+      });
+
+      renderDashboard();
+    });
+  </script>
+</body>
+</html>
