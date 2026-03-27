@@ -103,7 +103,9 @@ function chartBaseOptions(textColor) {
   };
 }
 
-const SOURCE = window.STRAVA_RUNTIME.getActivityDashboardSource('ride');
+const SOURCE = window.STRAVA_RUNTIME.hasUploadedData()
+  ? window.STRAVA_RUNTIME.getActivityDashboardSource('ride')
+  : window.STRAVA_RUNTIME.getEmptyActivityDashboardSource();
 class Dashboard {
   constructor(source) {
     this.source = source;

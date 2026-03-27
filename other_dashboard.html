@@ -97,7 +97,9 @@ function chartBaseOptions(textColor) {
   };
 }
 
-const SOURCE = window.STRAVA_RUNTIME.getActivityDashboardSource('other');
+const SOURCE = window.STRAVA_RUNTIME.hasUploadedData()
+  ? window.STRAVA_RUNTIME.getActivityDashboardSource('other')
+  : window.STRAVA_RUNTIME.getEmptyActivityDashboardSource();
 class Dashboard {
   constructor(source) { this.source=source; this.year='all'; this.charts={}; this.map=null; this.markers=null; this.populateYears(); document.getElementById('selYear').addEventListener('change', e => { this.year=e.target.value; this.apply(); }); this.initMap(); this.apply(); }
   populateYears() { const sel=document.getElementById('selYear'); sel.innerHTML='<option value="all">All Years</option>'+this.source.years.slice().reverse().map(y=>'<option value="'+y+'">'+y+'</option>').join(''); }

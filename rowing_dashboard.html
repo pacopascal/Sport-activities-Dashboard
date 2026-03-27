@@ -101,7 +101,9 @@ function chartBaseOptions(textColor) {
   };
 }
 
-const SOURCE = window.STRAVA_RUNTIME.getActivityDashboardSource('rowing');
+const SOURCE = window.STRAVA_RUNTIME.hasUploadedData()
+  ? window.STRAVA_RUNTIME.getActivityDashboardSource('rowing')
+  : window.STRAVA_RUNTIME.getEmptyActivityDashboardSource();
 class Dashboard {
   constructor(source) { this.source = source; this.year = 'all'; this.unit = 'm'; this.charts = {}; this.map = null; this.markers = null; this.populateYears(); this.bind(); this.initMap(); this.apply(); }
   bind() { document.getElementById('selYear').addEventListener('change', e => { this.year = e.target.value; this.apply(); }); document.getElementById('btnM').addEventListener('click', () => { this.unit='m'; this.syncUnit(); this.apply(); }); document.getElementById('btnYd').addEventListener('click', () => { this.unit='yd'; this.syncUnit(); this.apply(); }); }

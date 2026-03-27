@@ -401,6 +401,19 @@
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   }
 
+  function emptyActivityDashboardSource() {
+    return {
+      summary: {},
+      years: [],
+      monthly: [],
+      yearly: [],
+      weekday: [],
+      recent: [],
+      pins: [],
+      type_breakdown: []
+    };
+  }
+
   function defaultHeroFromCards(cards) {
     var totals = cards.reduce(function (acc, card) {
       acc.total_activities += card.stats.count || 0;
@@ -441,6 +454,10 @@
       var stored = readStoredData();
       return stored ? stored.meta : null;
     },
+    hasUploadedData: function () {
+      var stored = readStoredData();
+      return !!(stored && stored.meta && stored.activity_dashboards);
+    },
     getOverviewData: function (defaultCards) {
       var stored = readStoredData();
       if (stored && stored.cards && stored.hero) return stored;
@@ -455,7 +472,10 @@
       if (stored && stored.activity_dashboards && stored.activity_dashboards[category]) {
         return stored.activity_dashboards[category];
       }
-      return window.ACTIVITY_DASHBOARD_DATA && window.ACTIVITY_DASHBOARD_DATA[category];
+      return emptyActivityDashboardSource();
+    },
+    getEmptyActivityDashboardSource: function () {
+      return emptyActivityDashboardSource();
     }
   };
 }());
